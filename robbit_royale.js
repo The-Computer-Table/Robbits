@@ -70,6 +70,8 @@ Changelog
     walls!
     more dead code!
     lag!
+5/16/2022 - v0.8.1 Pre-Alpha Alpha
+    bug fix: removed "this._graphics is null" error
 
 ARCHIVE:
 robbit royale (c) 2021 computer table inc.
@@ -270,6 +272,7 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
                 if(Math.abs(event.clientY - BOARD_HEIGHT / 2 - texts[i][0] - btnHeight / 2) <= btnHeight / 2){
                     for(var j in textGs){
                         textGs[j].destroy();
+                        b.removeEventListener("click", checkClick);
                     }
                     texts[i][4]();
                 }
@@ -327,6 +330,7 @@ function loadMaps(){
 }
 function startGame(){
 
+    map1.data = testMap;
     //make tile objects
     for(var i in map1.data){
         tMap1[i] = [];
@@ -636,7 +640,6 @@ class Bullet extends GameObject{
 }
 
 class Robbit extends GameObject{
-
     constructor(x, y, imgId, s, maxhp = 100, hp = maxhp, dmg = 10, reload = 0, k = keys){
         super(imgId);
         this.circular = true;
@@ -773,7 +776,6 @@ function aStar(start, goal, h = (p) => dist(p, goal)){
             }
         }
     }
-    console.log(start, goal, openSet, cameFrom, gScore, fScore, current);
     throw new Error("Pi failed big time!");
 }
 
@@ -807,7 +809,10 @@ function cost(p1, p2){
             mult *= 10;
             break;
         case 3:
-            mult *= Infinity;
+            mult *= 99999;
+            break;
+        case 4:
+            mult *= 99999;
     }
     return mult * dist(p1, p2);
 }
