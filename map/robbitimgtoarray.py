@@ -1,5 +1,6 @@
 from PIL import Image
-name=input("Input File Name: ")
+import sys; name=sys.argv[1]
+#name=input("Input File Name: ")
 img=Image.open(f"{name}.png").convert('RGB')
 w,h=img.size
 def RGBtoTILEID(x):
@@ -14,9 +15,7 @@ def RGBtoTILEID(x):
     }
     return tileid[x] if x in tileid else 0
 f=open(f"{name}.json","w")
-f.write(str([[RGBtoTILEID(img.getpixel((j,i)) )for j in range(h)] for i in range(w)]))
-
-
+f.write(str(([[RGBtoTILEID(img.getpixel((i,j)) )for i in range(w)] for j in range(h)])))
 #0-blank
 #1-slowing
 #2-lava
