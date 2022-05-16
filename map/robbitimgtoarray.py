@@ -14,7 +14,7 @@ def RGBtoTILEID(x):
     }
     return tileid[x] if x in tileid else 0
 f=open(f"{name}.json","w")
-f.write(str([[RGBtoTILEID(img.getpixel((i,j)) )for j in range(h)] for i in range(w)]))
+f.write(str([[RGBtoTILEID(img.getpixel((j,i)) )for j in range(h)] for i in range(w)]))
 
 
 #0-blank
