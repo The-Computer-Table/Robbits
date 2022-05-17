@@ -326,7 +326,7 @@ function loadGame(){
 function loadMaps(){
     var mapArr = resources["maplist"].data.split("\n");
     var theMap = mapArr[currentMap];
-    console.log(theMap);
+    theMap = "map_0";
     loader.add(theMap, "map/" + theMap + ".json");
     map1 = resources[theMap];
     loader.load(startGame);
