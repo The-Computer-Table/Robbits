@@ -61,6 +61,19 @@ Changelog
     added dead code
 5/12/2022 - v0.7 Pre-Alpha Alpha
     added main menu and "options" menu
+5/12/2022 - v0.7.1 Pre-Alpha Alpha
+    new tile: teleporter
+5/13/2022 - v0.7.2 Pre-Alpha Alpha
+    added dead code
+5/16/2022 - v0.8 Pre-Alpha Alpha
+    new maps!
+    walls!
+    more dead code!
+    lag!
+5/16/2022 - v0.8.1 Pre-Alpha Alpha
+    bug fix: removed "this._graphics is null" error
+5/17/2022 - v0.9 Pre-Alpha Alpha
+    Enemies now have pathfinding ai
 
 ARCHIVE:
 robbit royale (c) 2021 computer table inc.
@@ -99,40 +112,42 @@ Version History:
 
 //maps
 
+var g;
+
 var map1 = [ //array with the type of each tile
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 4, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 4, 1, 1, 4, 0, 6, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 6, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 1, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0],
     [0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0]
 ]; 
 
 var testMap = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
@@ -146,7 +161,10 @@ var testMap = [
 //2: lava tile: damages robbits
 //3: crate
 //4: enemy spawn
+//5: teleporter
+//6: wall
 
+var currentMap = 0;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -154,10 +172,12 @@ var block = []; //array to hold blocked zones
 
 const SCALE = 2;
 const TILE_WIDTH = 16 * SCALE;
-const BOARD_WIDTH = 512 * SCALE;
-const BOARD_HEIGHT = 256 * SCALE;
+const WIDTH_IN_TILES = 32;
+const BOARD_WIDTH = WIDTH_IN_TILES * TILE_WIDTH;
+const HEIGHT_IN_TILES = 16;
+const BOARD_HEIGHT = HEIGHT_IN_TILES * TILE_WIDTH;
 const ERROR = 1.5;
-const CHAOS = .3;
+const CHAOS = .2;
 const UPSCALE = 1;
 
 function outBounds(x, y){
@@ -243,17 +263,18 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
                 .addChild(centeredText(text, style, btnWidth, btnHeight));
         }
         app.stage.addChild(textGs[i]);
-        console.log(textGs[i].y);
+        //console.log(textGs[i].y);
     }
     var checkClick = (event) => {
         if(event.button !== 0) return;
         if(Math.abs(event.clientX - BOARD_WIDTH / 2) <= btnWidth / 2){
             for(var i in textGs){
-                console.log(texts[i].length);
+                //console.log(texts[i].length);
                 if(texts[i].length == 4) continue;
                 if(Math.abs(event.clientY - BOARD_HEIGHT / 2 - texts[i][0] - btnHeight / 2) <= btnHeight / 2){
                     for(var j in textGs){
                         textGs[j].destroy();
+                        b.removeEventListener("click", checkClick);
                     }
                     texts[i][4]();
                 }
@@ -296,16 +317,28 @@ function loadGame(){
         .add("bullet", "Images/bullet.png")
         .add("tile_crate", "Images/tile_crate.png")
         .add("simple_enemy", "Images/simple_enemy.png")
-        .load(startGame);
+        .add("tile_teleporter", "Images/tile_teleporter.bmp")
+        .add("tile_wall", "Images/tile_wall.png")
+        .add("maplist", "map/maplist")
+        .load(loadMaps);
 }
 
+function loadMaps(){
+    var mapArr = resources["maplist"].data.split("\n");
+    var theMap = mapArr[currentMap];
+    theMap = "map_0";
+    loader.add(theMap, "map/" + theMap + ".json");
+    map1 = resources[theMap];
+    loader.load(startGame);
+}
 function startGame(){
 
+    //map1.data = testMap;
     //make tile objects
-    for(var i in map1){
+    for(var i in map1.data){
         tMap1[i] = [];
-        for(var j in map1[i]){
-            tMap1[i][j] = new Tile(i, j, map1[i][j]);
+        for(var j in map1.data[i]){
+            tMap1[i][j] = new Tile(i, j, map1.data[i][j]);
         }
     }
 
@@ -493,12 +526,15 @@ class GameObject extends Sprite{
     onHit(r){}
 }
 
+var tps = [];
+
 class Tile extends GameObject{
 
     constructor(y, x, t = 0){
         switch(t){
             case 4:
                 starts.push(() => {new SimpleEnemy(x * TILE_WIDTH, y * TILE_WIDTH, 1, 20, 40, 200, rob);});
+                t = 0;
             case 0:
                 super("tile_default");
                 this.onStep = function(r){
@@ -522,6 +558,40 @@ class Tile extends GameObject{
                 super("tile_crate");
                 this.hp = 30 * chaos();
                 this.under = new Tile(y, x, 0);
+                this.isBlock = true;
+                this.block = block.push((r, s = r.speed, width = TILE_WIDTH) => {
+                    bump.hit(r, this, true);
+                }) - 1;
+                this.die = function(){
+                    tMap1[this.y / TILE_WIDTH][this.x / TILE_WIDTH] = this.under;
+                    this.visible = false;
+                    block[this.block] = () => {};
+                }
+                this.onStep = () => {}
+                break;
+            case 5:
+                super("tile_teleporter");
+                this.tpId = tps.length;
+                tps.push(this);
+                this.cooldown = 80;
+                this.onStep = function(r){
+                    if("tpWaitId" in r){
+                        if(r.timerWaits[r.tpWaitId] <= r.timerLengths[r.tpWaitId])
+                            return;
+                    } else {
+                        r.tpWaitId = r.timerWaits.push(0);
+                        r.timerLengths[r.tpWaitId] = this.cooldown
+                    }
+                    var target = tps[!this.tpId + 0]; //dont ask
+                    r.x = target.x;
+                    r.y = target.y;
+                    r.timerWaits[r.tpWaitId] = 0;
+                }
+                break;
+            case 6:
+                super("tile_wall");
+                this.hp = Infinity;
+                this.isBlock = true;
                 this.block = block.push((r, s = r.speed, width = TILE_WIDTH) => {
                     bump.hit(r, this, true);
                 }) - 1;
@@ -535,6 +605,9 @@ class Tile extends GameObject{
             default:
                 super("tile_default");
         }
+        this.ty = y;
+        this.tx = x;
+        this.t = t;
         this.x = x * TILE_WIDTH;
         this.y = y * TILE_WIDTH;
         app.stage.addChild(this);
@@ -546,7 +619,7 @@ class Bullet extends GameObject{
         super("bullet");
         this.circular = true;
         this.dmg = dmg * chaos();
-        this.speed = speed * chaos();
+        this.speed = speed * SCALE * chaos();
         let sped = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
         this.dx = dx * speed / sped;
         this.dy = dy * speed / sped;
@@ -574,13 +647,12 @@ class Bullet extends GameObject{
 }
 
 class Robbit extends GameObject{
-
     constructor(x, y, imgId, s, maxhp = 100, hp = maxhp, dmg = 10, reload = 0, k = keys){
         super(imgId);
         this.circular = true;
         this.id = imgId;
-        this.x = x + BOARD_WIDTH * (chaos() - 1);
-        this.y = y + BOARD_HEIGHT * (chaos() - 1);
+        this.x = x;
+        this.y = y;
         this.speed = s * chaos() * SCALE;
         let hpChaos = chaos();
         this.maxhp = maxhp * hpChaos;
@@ -590,6 +662,8 @@ class Robbit extends GameObject{
         this.reload = reload * chaos();
         this.k = k;
         this.wait = 0;
+        this.timerLengths = [this.reload];
+        this.timerWaits = [0];
         app.stage.addChild(this);
         objs.push(this);
         this.healthbar = new HappinesBar(this, 0, TILE_WIDTH + SCALE, "hp", "maxhp", 0xFF0000);
@@ -614,11 +688,20 @@ class Robbit extends GameObject{
         for(var i in block){
             block[i](this);
         }
-        let onTile = tMap1[Math.floor(this.y / TILE_WIDTH + 0.5)][Math.floor(this.x / TILE_WIDTH + 0.5)];
+        let onTile = tMap1[this.tileID(this.y)][this.tileID(this.x)];
         onTile.onStep(this);
         this.wait++;
+        for(i in this.timerWaits) this.timerWaits[i]++;
         this.specMove();
         if(this.hp <= 0) this.die();
+    }
+
+    tileID(y) {
+        return Math.floor(y / TILE_WIDTH + 0.5);
+    }
+
+    centerOfTile(id) {
+        return id * TILE_WIDTH + TILE_WIDTH / 2;
     }
 
     specMove() {}
@@ -656,15 +739,31 @@ class SimpleEnemy extends Robbit {
         this.target = target;
         this.targX = this.target.x;
         this.targY = this.target.y;
+        this.makePath();
+        this.rePath = 30;
+    }
+
+    makePath(){
+        this.path = aStar([this.tileID(this.y), this.tileID(this.x)], [this.tileID(this.targY), this.tileID(this.targX)]);
+        this.rePathWait = 0;
     }
 
     keys() {
-        return {
-            up: this.y > this.target.y + BOARD_HEIGHT * (chaos() - 1),
-            down: this.y < this.target.y + BOARD_HEIGHT * (chaos() - 1),
-            left: this.x > this.target.x + BOARD_WIDTH * (chaos() - 1),
-            right: this.x < this.target.x + BOARD_WIDTH * (chaos() - 1)
-        };
+        var k = {up: false, down: false, left: false, right: false};
+        if(this.tileID(this.x) === this.tileID(this.targX) && this.tileID(this.y) === this.tileID(this.targY)) return k;
+        var coords = [this.tileID(this.y), this.tileID(this.x)];
+        if(arrEq(coords, this.path[0])) this.path.shift();
+        if(this.path.length === 0) this.makePath();
+        var targCoords = this.path[0];
+        var ky = targCoords[0] - coords[0];
+        var kx = targCoords[1] - coords[1];
+        if(ky === 0) ky = coords[0] * TILE_WIDTH - this.y;
+        if(kx === 0) kx = coords[1] * TILE_WIDTH - this.x;
+        k.up = ky < 0;
+        k.down = ky > 0;
+        k.left = kx < 0;
+        k.right = kx > 0;
+        return k;
     }
 
     specMove(){
@@ -672,7 +771,177 @@ class SimpleEnemy extends Robbit {
             this.wait = 0;
             this.shoot(this.target.x + TILE_WIDTH / 2, this.target.y + TILE_WIDTH / 2, 0, CHAOS);
         }
+        if(this.rePathWait >= this.rePath){
+            this.targX = this.target.x;
+            this.targY = this.target.y;
+            this.makePath();
+        }
+        this.rePathWait++;
     }
+}
+
+function reconstructPath(cameFrom, current){
+    var totalPath = [intToPoint(current)];
+    while(cameFrom.has(current)){
+        current = cameFrom.get(current);
+        totalPath.unshift(intToPoint(current));
+    }
+    return totalPath;
+}
+
+function heuristic(p1, p2){
+    return dist(p1, p2) * costOfTile(p1) * costOfTile(p2);
+}
+
+function aStar(start, goal, h = heuristic){
+    start = pointToInt(start);
+    goal = pointToInt(goal);
+    var openSet = [start];
+    var cameFrom = new Map();
+    var gScore = new Map([[start, 0]]); //pointToInt(p) -> cost of path from start to p
+    var fScore = new Map([[start, h(start, goal)]]); //pointToInt(p) -> heuristic from p to goal
+    var hLess = (a, b) => h(a, goal) < h(b, goal);
+    var current;
+    while(openSet.length > 0){
+        current = openSet[0];
+        if(current === goal) return reconstructPath(cameFrom, current);
+        MinHeap.remove(openSet, hLess);
+        for(var n of neighbors(current)){
+            var tentativeGScore = gScore.get(current) + cost(current, n);
+            if(!gScore.has(n) || tentativeGScore < gScore.get(n)){
+                //console.log(tentativeGScore);
+                cameFrom.set(n, current);
+                gScore.set(n, tentativeGScore);
+                fScore.set(n, tentativeGScore + h(n, goal));
+                if(!(openSet.includes(n))) MinHeap.insert(openSet, n, hLess);
+            }
+        }
+    }
+    throw new Error("Failed!");
+}
+
+function pointToInt(p){
+    if(typeof p === "number") return p
+    return p[0] * WIDTH_IN_TILES + p[1];
+}
+
+function intToPoint(p){
+    if(typeof p === "object") return p;
+    var x = p % WIDTH_IN_TILES;
+    return [(p - x) / WIDTH_IN_TILES, x];
+}
+
+function dist(p1, p2){
+    p1 = intToPoint(p1);
+    p2 = intToPoint(p2);
+    return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+}
+
+function cost(p1, p2){
+    var extraMult = 0;
+    p1 = intToPoint(p1);
+    p2 = intToPoint(p2);
+    if(p1[0] !== p2[0] && p1[1] !== p2[1]) extraMult = costOfTile([p1[0], p2[1]]) + costOfTile([p2[0], p1[1]])
+    return costOfTile(p1) * costOfTile(p2) * dist(p1, p2) * (1 + 0.001 * extraMult);
+}
+
+function costOfTile(t){
+    t = intToPoint(t);
+    const tp = tMap1[t[0]][t[1]];
+    switch(tp.t){
+        case 1: return 2
+        case 2: return 10
+        case 3: return 100
+        case 6: return 99999
+        default: return 1
+    }
+}
+
+function arrEq(arr1, arr2){
+    if(arr1.length !== arr2.length) return false;
+    for(i in arr1){
+        if(arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+}
+
+function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES){ //[y, x]
+    var neigh = [];
+    if(typeof tileCoords == "number") tileCoords = intToPoint(tileCoords);
+    const y = tileCoords[0];
+    const x = tileCoords[1];
+    nTop = y > 0;
+    nBot = y < height - 1;
+    nLeft = x > 0;
+    nRight = x < width - 1;
+    if(nBot)            neigh.push(pointToInt([y + 1, x    ]));
+    //if(nBot && nRight)  neigh.push(pointToInt([y + 1, x + 1]));
+    if(nRight)          neigh.push(pointToInt([y    , x + 1]));
+    //if(nRight && nTop)  neigh.push(pointToInt([y - 1, x + 1]));
+    if(nTop)            neigh.push(pointToInt([y - 1, x    ]));
+    //if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
+    if(nLeft)           neigh.push(pointToInt([y    , x - 1]));
+    const T = tMap1[y][x];
+    //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
+    //if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]))
+    return neigh;
+}
+
+class MinHeap {
+    static parent(i){
+        return Math.ceil(i / 2 - 1);
+    }
+
+    static leftChild(i){
+        return i * 2 + 1;
+    }
+
+    static rightChild(i){
+        return i * 2 + 2;
+    }
+
+    static insert(arr, val, less = (a, b) => a < b){
+        if(val === undefined){throw new Error("bruh")}
+        arr.push(val);
+        var i = arr.length - 1;
+        var p = MinHeap.parent(i);
+        while(p >= 0 && less(arr[i], arr[p])){
+            swap(arr, i, p);
+            i = p;
+            p = MinHeap.parent(i);
+        }
+        return arr;
+    }
+
+    static remove(arr, less = (a, b) => a < b){
+        if(arr.length === 1) return arr.splice(0);
+        arr[0] = arr.splice(arr.length - 1)[0];
+        var current = 0;
+        if(arr.length === 2){
+            if(less(arr[1], arr[0])) swap(arr, 0, 1);
+            return arr[0];
+        }
+        var leftC = MinHeap.leftChild(current);
+        var rightC = MinHeap.rightChild(current);
+        while(leftC in arr && rightC in arr && (less(arr[leftC], arr[current]) || less(arr[rightC], arr[current]))){
+            if(less(arr[leftC], arr[rightC])){
+                rightC = leftC;
+            }
+            swap(arr, current, rightC);
+            current = rightC;
+            leftC = MinHeap.leftChild(current);
+            rightC = MinHeap.rightChild(current);
+        }
+        if(!(rightC in arr) && leftC in arr && less(arr[leftC], arr[current])) swap(arr, current, leftC);
+        return(arr[0]);
+    }
+}
+
+function swap(arr, i1, i2){
+    var temp = arr[i1];
+    arr[i1] = arr[i2];
+    arr[i2] = temp;
+    return arr;
 }
 
 class Player extends Robbit {
