@@ -605,6 +605,8 @@ class Tile extends GameObject{
             default:
                 super("tile_default");
         }
+        this.ty = y;
+        this.tx = x;
         this.t = t;
         this.x = x * TILE_WIDTH;
         this.y = y * TILE_WIDTH;
@@ -879,7 +881,9 @@ function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES)
     if(nTop)            neigh.push(pointToInt([y - 1, x    ]));
     //if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
     if(nLeft)           neigh.push(pointToInt([y    , x - 1]));
+    const T = tMap1[y][x];
     //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
+    //if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]))
     return neigh;
 }
 
