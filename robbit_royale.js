@@ -74,6 +74,10 @@ Changelog
     bug fix: removed "this._graphics is null" error
 5/17/2022 - v0.9 Pre-Alpha Alpha
     Enemies now have pathfinding ai
+5/19/2022 - v0.9.1 Pre-Alpha Alpha
+    New map
+    Pathfinding ai now works with teleporters
+    Added game over screen
 
 ARCHIVE:
 robbit royale (c) 2021 computer table inc.
@@ -164,7 +168,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 5;
+var currentMap = 4;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -201,7 +205,8 @@ var rob;
 var enemy;
 var starts = []
 var b = document.getElementById("bod");
-var state = inGame;
+var state = (delta) => {};
+var doState = (delta) => state(delta);
 var objs = [tMap1];
 var debugInfo = true;
 
@@ -220,6 +225,7 @@ PIXI.LoaderResource.setExtensionXhrType('fnt', PIXI.LoaderResource.XHR_RESPONSE_
 const BG_COLOR = 0x000000;
 app.renderer.backgroundColor = BG_COLOR;
 
+app.ticker.add(doState);
 loadMenu();
 
 function chaos(ch = CHAOS){
@@ -227,6 +233,7 @@ function chaos(ch = CHAOS){
 }
 
 function loadMenu(){
+    if("Fonts/ArcadeClassicGreen.txt" in resources) return mainMenu();
     loader
         .add("Fonts/F_YSCPuKgWBcrTevy1eTgkMm.ttf.txt")
         .add("Fonts/ArcadeClassicGreen.txt")
@@ -285,6 +292,14 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
     return textGs;
 }
 
+function gameOver(){
+    endGame(objs);
+    menu([
+        [2 * TILE_WIDTH - BOARD_HEIGHT / 2, "Game Over", {fontName:"ArcadeClassicGreen"}, TITLE_SCALE],
+        [0, "Back to Menu", {fontName: "ArcadeClassic"}, SCALE, mainMenu]
+    ], 8 * TILE_WIDTH);
+}
+
 function loadOpts(){
     loader.load(options);
 }
@@ -308,6 +323,7 @@ function centeredText(txt, style, width, height, scale = SCALE) {
 }
 
 function loadGame(){
+    if("android" in resources) return startGame();
     loader
         .add("android", "Images/872px-Android_robot.svg.png")
         .add("player" ,"Images/robbit.png")
@@ -347,6 +363,8 @@ function startGame(){
     for(i in starts){
         starts[i]();
     }
+
+    starts = [];
     //add listeners
     b.addEventListener("keydown", (event) => {
         //console.log(event.keyCode);
@@ -399,7 +417,11 @@ function startGame(){
         document.getElementById("debugInfo").style = "visibility: visible;"
     }
 
-    window.setTimeout(() => app.ticker.add((delta) => state(delta)), 500);
+    state = inGame;
+
+    app.ticker.remove(doState);
+
+    window.setTimeout(() => app.ticker.add(doState), 500);
 }
 
 function inGame(delta){
@@ -422,6 +444,16 @@ function mainLoop(obj){
             if(obj.dead) break notDead;
             obj.move();
         }
+    }
+}
+
+function endGame(obj){
+    if(Array.isArray(obj)){
+        for(var i in obj){
+            endGame(obj[i]);
+        }
+    } else if(!obj.dead){
+        obj.die();
     }
 }
 
@@ -604,6 +636,8 @@ class Tile extends GameObject{
             default:
                 super("tile_default");
         }
+        this.ty = y;
+        this.tx = x;
         this.t = t;
         this.x = x * TILE_WIDTH;
         this.y = y * TILE_WIDTH;
@@ -636,7 +670,7 @@ class Bullet extends GameObject{
     }
 
     onHit(r){
-        if(r === this.shooter || this.dead || r.hp === undefined) return;
+        if(r.robbitType === this.shooter.robbitType || this.dead || r.hp === undefined) return;
         r.hp -= this.dmg;
         //if(r.hp <= 0) r.die();
         this.die();
@@ -733,6 +767,7 @@ class Robbit extends GameObject{
 class SimpleEnemy extends Robbit {
     constructor(x, y, speed, hp, dmg, reload, target){
         super(x, y, "simple_enemy", speed, hp, hp, dmg, reload);
+        this.robbitType = "SimpleEnemy"
         this.target = target;
         this.targX = this.target.x;
         this.targY = this.target.y;
@@ -818,8 +853,8 @@ function aStar(start, goal, h = heuristic){
 }
 
 function pointToInt(p){
-    if(typeof p === "number") return p
-    return p[0] * WIDTH_IN_TILES + p[1];
+    if(typeof p === "number") return p;
+    return +p[0] * WIDTH_IN_TILES + +p[1];
 }
 
 function intToPoint(p){
@@ -839,11 +874,12 @@ function cost(p1, p2){
     p1 = intToPoint(p1);
     p2 = intToPoint(p2);
     if(p1[0] !== p2[0] && p1[1] !== p2[1]) extraMult = costOfTile([p1[0], p2[1]]) + costOfTile([p2[0], p1[1]])
-    return costOfTile(p1) * costOfTile(p2) * dist(p1, p2) * (1 + 0.001 * extraMult);
+    return costOfTile(p1) * costOfTile(p2) * (1 + 0.001 * extraMult);
 }
 
 function costOfTile(t){
     t = intToPoint(t);
+    if(t[0] > HEIGHT_IN_TILES) console.log(t[0] > HEIGHT_IN_TILES);
     const tp = tMap1[t[0]][t[1]];
     switch(tp.t){
         case 1: return 2
@@ -878,7 +914,9 @@ function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES)
     if(nTop)            neigh.push(pointToInt([y - 1, x    ]));
     //if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
     if(nLeft)           neigh.push(pointToInt([y    , x - 1]));
+    const T = tMap1[y][x];
     //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
+    if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]));
     return neigh;
 }
 
@@ -941,7 +979,8 @@ function swap(arr, i1, i2){
 
 class Player extends Robbit {
     constructor(){
-        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 10, 40);
+        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 15, 40);
+        this.robbitType = "Player";
     }
 
     specMove(){
@@ -952,5 +991,12 @@ class Player extends Robbit {
             speed: ` + this.speed + `<br>
             dmg: ` + this.dmg + `
         `;
+    }
+
+    die(){
+        this.visible = false;
+        this.dead = true;
+        state = (delta) => {}
+        gameOver();
     }
 }
