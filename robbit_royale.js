@@ -168,7 +168,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 4;
+var currentMap = 0;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -342,6 +342,7 @@ function loadGame(){
 function loadMaps(){
     var mapArr = resources["maplist"].data.split("\n");
     var theMap = mapArr[currentMap];
+    theMap = "map_0";
     loader.add(theMap, "map/" + theMap + ".json");
     map1 = resources[theMap];
     loader.load(startGame);
