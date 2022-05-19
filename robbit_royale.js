@@ -78,6 +78,8 @@ Changelog
     New map
     Pathfinding ai now works with teleporters
     Added game over screen
+5/19/2022 - v0.10 Pre-Alpha Beta
+    BETA!!!!!!!!
 
 ARCHIVE:
 robbit royale (c) 2021 computer table inc.
@@ -168,7 +170,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 0;
+var currentMap = 1;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -202,12 +204,15 @@ var keys = {
 };
 
 var rob;
+var won = false;
 var enemy;
+var enemiesLeft = 0;
+var fail = false;
 var starts = []
 var b = document.getElementById("bod");
 var state = (delta) => {};
 var doState = (delta) => state(delta);
-var objs = [tMap1];
+var objs = [];
 var debugInfo = true;
 
 const Application = PIXI.Application;
@@ -227,6 +232,10 @@ app.renderer.backgroundColor = BG_COLOR;
 
 app.ticker.add(doState);
 loadMenu();
+
+function tType(p){
+    return tMap1[p[0]][p[1]].t;
+}
 
 function chaos(ch = CHAOS){
     return 1 + (Math.random() - 0.5) * ch;
@@ -292,8 +301,22 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
     return textGs;
 }
 
-function gameOver(){
+function win(){
+    won = true;
     endGame(objs);
+    objs = [];
+    tps = [];
+    menu([
+        [2 * TILE_WIDTH - BOARD_HEIGHT / 2, "You Win!", {fontName:"ArcadeClassicGreen"}, TITLE_SCALE],
+        [0, "Back to Menu", {fontName: "ArcadeClassic"}, SCALE, mainMenu]
+    ], 8 * TILE_WIDTH);
+}
+
+function gameOver(){
+    fail = true;
+    endGame(objs);
+    objs = [];
+    tps = [];
     menu([
         [2 * TILE_WIDTH - BOARD_HEIGHT / 2, "Game Over", {fontName:"ArcadeClassicGreen"}, TITLE_SCALE],
         [0, "Back to Menu", {fontName: "ArcadeClassic"}, SCALE, mainMenu]
@@ -342,12 +365,15 @@ function loadGame(){
 function loadMaps(){
     var mapArr = resources["maplist"].data.split("\n");
     var theMap = mapArr[currentMap];
-    theMap = "map_0";
     loader.add(theMap, "map/" + theMap + ".json");
     map1 = resources[theMap];
     loader.load(startGame);
 }
 function startGame(){
+
+    enemiesLeft = 0;
+    won = false;
+    fail = false;
 
     //map1.data = testMap;
     //make tile objects
@@ -357,6 +383,8 @@ function startGame(){
             tMap1[i][j] = new Tile(i, j, map1.data[i][j]);
         }
     }
+
+    objs.push(tMap1);
 
     //add robbit
     rob = new Player();
@@ -429,33 +457,22 @@ function inGame(delta){
     mainLoop(objs);
 }
 
-function mainLoop(obj){
+function doToAll(obj, func){
     if(Array.isArray(obj)){
-        //if(Array.isArray(func)){
-        //    for(var i in obj){
-        //        mainLoop(obj[i], func[i]);
-        //    }
-        //} else {
-            for(var i in obj){
-                mainLoop(obj[i]);
-            }
-        //}
-    } else {
-        notDead: {
-            if(obj.dead) break notDead;
-            obj.move();
+        for(var i in obj){
+            doToAll(obj[i], func);
         }
+    } else if(obj !== undefined && !obj.dead){
+        obj[func]();
     }
 }
 
+function mainLoop(obj){
+    doToAll(obj, "move");
+}
+
 function endGame(obj){
-    if(Array.isArray(obj)){
-        for(var i in obj){
-            endGame(obj[i]);
-        }
-    } else if(!obj.dead){
-        obj.die();
-    }
+    doToAll(obj, "die");
 }
 
 class StatusBar extends Graphics{
@@ -774,6 +791,7 @@ class SimpleEnemy extends Robbit {
         this.targY = this.target.y;
         this.makePath();
         this.rePath = 30;
+        enemiesLeft++;
     }
 
     makePath(){
@@ -802,7 +820,9 @@ class SimpleEnemy extends Robbit {
     specMove(){
         if(this.wait >= this.reload){
             this.wait = 0;
-            this.shoot(this.target.x + TILE_WIDTH / 2, this.target.y + TILE_WIDTH / 2, 0, CHAOS);
+            var targ = this.target;
+            if(tType(this.path[0]) === 3) targ = {y: this.path[0][0] * TILE_WIDTH, x: this.path[0][1] * TILE_WIDTH};
+            this.shoot(targ.x + TILE_WIDTH / 2, targ.y + TILE_WIDTH / 2, 0, CHAOS);
         }
         if(this.rePathWait >= this.rePath){
             this.targX = this.target.x;
@@ -810,6 +830,16 @@ class SimpleEnemy extends Robbit {
             this.makePath();
         }
         this.rePathWait++;
+    }
+
+    die(){
+        this.visible = false;
+        this.dead = true;
+        if(fail) return;
+        enemiesLeft--;
+        if(enemiesLeft === 0){
+            win();
+        }
     }
 }
 
@@ -997,6 +1027,7 @@ class Player extends Robbit {
     die(){
         this.visible = false;
         this.dead = true;
+        if(won) return;
         state = (delta) => {}
         gameOver();
     }
