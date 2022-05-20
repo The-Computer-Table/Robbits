@@ -32,7 +32,7 @@
 
 Bluh bluh license dont steal this
 
-Robbit Royale v0.4 Pre-Alpha Alpha
+Robbit Royale v0.10 Pre-Alpha Beta
 
 Changelog
 4/20/2022 - v0.4 Pre-Alpha Alpha
@@ -80,6 +80,18 @@ Changelog
     Added game over screen
 5/19/2022 - v0.10 Pre-Alpha Beta
     BETA!!!!!!!!
+
+Pre-Alpha Alpha
+
+
+TODO: 
+==========
+level select
+fix lag by preloading enemy paths
+lore
+powerups
+new enemy types
+README
 
 ARCHIVE:
 robbit royale (c) 2021 computer table inc.
@@ -182,6 +194,7 @@ const WIDTH_IN_TILES = 32;
 const BOARD_WIDTH = WIDTH_IN_TILES * TILE_WIDTH;
 const HEIGHT_IN_TILES = 16;
 const BOARD_HEIGHT = HEIGHT_IN_TILES * TILE_WIDTH;
+const TOTAL_TILES = WIDTH_IN_TILES * HEIGHT_IN_TILES;
 const ERROR = 1.5;
 const CHAOS = .2;
 const UPSCALE = 1;
@@ -214,6 +227,7 @@ var state = (delta) => {};
 var doState = (delta) => state(delta);
 var objs = [];
 var debugInfo = true;
+var paths = new Map(); // pointsToInt(start, goal) -> [start, p1, p2, ... goal] (optimal path)
 
 const Application = PIXI.Application;
 const loader = PIXI.Loader.shared;
@@ -865,6 +879,7 @@ function aStar(start, goal, h = heuristic){
     var fScore = new Map([[start, h(start, goal)]]); //pointToInt(p) -> heuristic from p to goal
     var hLess = (a, b) => h(a, goal) < h(b, goal);
     var current;
+    var endSet = [goal];
     while(openSet.length > 0){
         current = openSet[0];
         if(current === goal) return reconstructPath(cameFrom, current);
@@ -949,6 +964,35 @@ function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES)
     //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
     if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]));
     return neigh;
+}
+
+function pointsToInt(p){
+    if(typeof p === "number") return p;
+    return pointToInt(p[0]) * TOTAL_TILES + pointToInt(p[1]);
+}
+
+function intToInts(p){
+    var p0, p1;
+    if(typeof p === "number") {
+        p1 = p % TOTAL_TILES;
+        p0 = (p - p1) / TOTAL_TILES;
+    } else {
+        p0 = pointToInt(p[0]);
+        p1 = pointToInt(p[1]);
+    }
+    return [p0, p1];
+}
+
+function intToPoints(p){
+    var p0, p1;
+    if(typeof p === "number") {
+        p1 = p % TOTAL_TILES;
+        p0 = (p - p1) / TOTAL_TILES;
+    } else {
+        p0 = p[0];
+        p1 = p[1];
+    }
+    return [intToPoint(p0), intToPoint(p1)];
 }
 
 class MinHeap {
