@@ -95,7 +95,6 @@ fix lag by preloading enemy paths
 lore
 powerups
 new enemy types
-README
 
 ARCHIVE:
 ===========
