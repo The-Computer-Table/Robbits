@@ -16,7 +16,7 @@
  |                       |              |         | |                                 
  |                       |              |         | |                                 
  |________________________________________________  |                                             
-|\                                                  \
+|\                                                   \
 | \\|Esc|F1|F2|F3|F4|F5|F6|F7|F8|F9|F10|F11|F12|Home| \
 |_ \\_____|`|1|2|3|4|5|6|7|8|9|0|-|=|<-|_______________\                                        
 ||  \\___|Tab|q|w|e|r|t|y|u|i|o|p|[|]|\|________________\                            
@@ -186,7 +186,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 0;
+var currentMap = 3;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -202,6 +202,13 @@ const TOTAL_TILES = WIDTH_IN_TILES * HEIGHT_IN_TILES;
 const ERROR = 1.5;
 const CHAOS = .2;
 const UPSCALE = 1;
+
+/**
+ * Checks if a coordinate point is outside the board
+ * @param {Number} x The x coordinate
+ * @param {Number} y The y coordinate
+ * @returns {Boolean} Returns true if the point is out of bounds
+ */
 
 function outBounds(x, y){
     return x < 0 || y < 0 || x > BOARD_WIDTH || y > BOARD_HEIGHT;
@@ -256,13 +263,30 @@ app.renderer.backgroundColor = BG_COLOR;
 app.ticker.add(doState);
 loadMenu();
 
+/**
+ * 
+ * @param {Number[]} p Array with the coordinates of the tile
+ * @returns {Number} The id of the type of tile
+ */
+
 function tType(p){
     return tMap1[p[0]][p[1]].t;
 }
 
+/**
+ * 
+ * @param {Number} ch The degree of chaos 
+ * @returns {Number} A random number between 1 - ch and 1 + ch
+ */
+
 function chaos(ch = CHAOS){
     return 1 + (Math.random() - 0.5) * ch;
 }
+
+/**
+ * Loads the main menu
+ * @returns {void}
+ */
 
 function loadMenu(){
     if("Fonts/ArcadeClassicGreen.txt" in resources) return mainMenu();
@@ -273,6 +297,11 @@ function loadMenu(){
 }
 
 const TITLE_SCALE = 2 * SCALE;
+
+/**
+ * The main menu
+ */
+
 function mainMenu(){
     menu([
         [2 * TILE_WIDTH - BOARD_HEIGHT / 2, "ROBBIT ROYALE", {fontName: "ArcadeClassicGreen"}, TITLE_SCALE],
@@ -280,6 +309,14 @@ function mainMenu(){
         [2 * TILE_WIDTH, "Options", {fontName: "ArcadeClassic"}, SCALE, loadOpts]
     ]);
 }
+
+/**
+ * A menu
+ * @param {Array} texts In the form [yoff, text, style, scale, func (only if button)]
+ * @param {Number} btnWidth 
+ * @param {Number} btnHeight 
+ * @returns 
+ */
 
 function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //each text is of form [yoff, text, style, scale, func (only if button)]
     var textGs = [];
@@ -324,6 +361,11 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
     return textGs;
 }
 
+/**
+ * call this when you win
+ * @returns {void}
+ */
+
 function win(){
     if(debugOpts.dontEnd) return;
     won = true;
@@ -335,6 +377,11 @@ function win(){
         [0, "Back to Menu", {fontName: "ArcadeClassic"}, SCALE, mainMenu]
     ], 8 * TILE_WIDTH);
 }
+
+/**
+ * call this when you use
+ * @returns {void}
+ */
 
 function gameOver(){
     if(debugOpts.dontEnd) return;
@@ -348,9 +395,17 @@ function gameOver(){
     ], 8 * TILE_WIDTH);
 }
 
+/**
+ * load options menu
+ */
+
 function loadOpts(){
     loader.load(options);
 }
+
+/**
+ * Options menu
+ */
 
 function options(){
     menu([
@@ -361,6 +416,16 @@ function options(){
     ], 8 * TILE_WIDTH)
 }
 
+/**
+ * Centers text on a box
+ * @param {String} txt 
+ * @param {Object} style 
+ * @param {Number} width 
+ * @param {Number} height 
+ * @param {Number} scale 
+ * @returns 
+ */
+
 function centeredText(txt, style, width, height, scale = SCALE) {
     var text = new BitmapText(txt, new TextStyle(style));
     text.anchor.set(0.5);
@@ -369,6 +434,11 @@ function centeredText(txt, style, width, height, scale = SCALE) {
     text.scale.x = text.scale.y = scale;
     return text;
 }
+
+/**
+ * Loads the game
+ * @returns {void}
+ */
 
 function loadGame(){
     if("android" in resources) return startGame();
@@ -387,6 +457,10 @@ function loadGame(){
         .load(loadMaps);
 }
 
+/**
+ * Loads the maps
+ */
+
 function loadMaps(){
     var mapArr = resources["maplist"].data.split("\n");
     var theMap = mapArr[currentMap];
@@ -394,6 +468,11 @@ function loadMaps(){
     map1 = resources[theMap];
     loader.load(startGame);
 }
+
+/**
+ * Starts the game
+ */
+
 function startGame(){
 
     enemiesLeft = 0;
@@ -478,9 +557,20 @@ function startGame(){
     window.setTimeout(() => app.ticker.add(doState), 500);
 }
 
+/**
+ * Game loop
+ * @param {Number} delta 
+ */
+
 function inGame(delta){
     mainLoop(objs);
 }
+
+/**
+ * Calls o[func]() for all objects in obj
+ * @param {Object} obj 
+ * @param {String} func 
+ */
 
 function doToAll(obj, func){
     if(Array.isArray(obj)){
@@ -492,9 +582,19 @@ function doToAll(obj, func){
     }
 }
 
+/**
+ * The main game loop
+ * @param {Array} obj 
+ */
+
 function mainLoop(obj){
     doToAll(obj, "move");
 }
+
+/**
+ * 
+ * @param {*} obj 
+ */
 
 function endGame(obj){
     doToAll(obj, "die");
@@ -1105,7 +1205,7 @@ function swap(arr, i1, i2){
 
 class Player extends Robbit {
     constructor(){
-        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 30, 40);
+        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 40, 40);
         this.robbitType = "Player";
     }
 
