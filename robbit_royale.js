@@ -186,7 +186,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 0;
+var currentMap = prompt("enter map id");
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
