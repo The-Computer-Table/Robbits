@@ -32,7 +32,7 @@
 
 Bluh bluh license dont steal this
 
-Robbit Royale v0.4 Pre-Alpha Alpha
+Robbit Royale v0.10 Pre-Alpha Beta
 
 Changelog
 4/20/2022 - v0.4 Pre-Alpha Alpha
@@ -80,8 +80,25 @@ Changelog
     Added game over screen
 5/19/2022 - v0.10 Pre-Alpha Beta
     BETA!!!!!!!!
+5/24/2022 - v0.10.1 Pre-Alpha Beta
+    Balance changes
+        Buffs:
+        Enemy health 40 -> 100
+        Player damage 10 -> 30
+        Nerfs:
+        Enemy pathfinding no longer optimal
+
+TODO: 
+==========
+level select
+fix lag by preloading enemy paths
+lore
+powerups
+new enemy types
+README
 
 ARCHIVE:
+===========
 robbit royale (c) 2021 computer table inc.
 version 0.3.3 Pre-Alpha Alpha 2021
 
@@ -152,7 +169,7 @@ var testMap = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -170,7 +187,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 1;
+var currentMap = 0;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -182,6 +199,7 @@ const WIDTH_IN_TILES = 32;
 const BOARD_WIDTH = WIDTH_IN_TILES * TILE_WIDTH;
 const HEIGHT_IN_TILES = 16;
 const BOARD_HEIGHT = HEIGHT_IN_TILES * TILE_WIDTH;
+const TOTAL_TILES = WIDTH_IN_TILES * HEIGHT_IN_TILES;
 const ERROR = 1.5;
 const CHAOS = .2;
 const UPSCALE = 1;
@@ -214,6 +232,12 @@ var state = (delta) => {};
 var doState = (delta) => state(delta);
 var objs = [];
 var debugInfo = true;
+var debugOpts = {
+    oneDirectionAStar: false,
+    dontEnd: false,
+    testMap: false
+};
+var paths = new Map(); // pointsToInt(start, goal) -> [start, p1, p2, ... goal] (optimal path)
 
 const Application = PIXI.Application;
 const loader = PIXI.Loader.shared;
@@ -302,6 +326,7 @@ function menu(texts, btnWidth = 6 * TILE_WIDTH, btnHeight = 2 * TILE_WIDTH){ //e
 }
 
 function win(){
+    if(debugOpts.dontEnd) return;
     won = true;
     endGame(objs);
     objs = [];
@@ -313,6 +338,7 @@ function win(){
 }
 
 function gameOver(){
+    if(debugOpts.dontEnd) return;
     fail = true;
     endGame(objs);
     objs = [];
@@ -375,7 +401,7 @@ function startGame(){
     won = false;
     fail = false;
 
-    //map1.data = testMap;
+    if(debugOpts.testMap) map1.data = testMap;
     //make tile objects
     for(var i in map1.data){
         tMap1[i] = [];
@@ -582,7 +608,7 @@ class Tile extends GameObject{
     constructor(y, x, t = 0){
         switch(t){
             case 4:
-                starts.push(() => {new SimpleEnemy(x * TILE_WIDTH, y * TILE_WIDTH, 1, 20, 40, 200, rob);});
+                starts.push(() => {new SimpleEnemy(x * TILE_WIDTH, y * TILE_WIDTH, 1, 100, 40, 200, rob);});
                 t = 0;
             case 0:
                 super("tile_default");
@@ -843,17 +869,34 @@ class SimpleEnemy extends Robbit {
     }
 }
 
-function reconstructPath(cameFrom, current){
+function reconstructPath(cameFrom, current, goesTo){
     var totalPath = [intToPoint(current)];
+    var ogCurrent = current;
     while(cameFrom.has(current)){
         current = cameFrom.get(current);
+        if(current === -1) break;
         totalPath.unshift(intToPoint(current));
+    }
+    current = ogCurrent;
+    while(goesTo.has(current)){
+        current = goesTo.get(current);
+        if(current === -1) break;
+        totalPath.push(intToPoint(current));
     }
     return totalPath;
 }
 
 function heuristic(p1, p2){
     return dist(p1, p2) * costOfTile(p1) * costOfTile(p2);
+}
+
+function onPath(path, target, special = -1){
+    var current = special;
+    do{
+        current = path.get(current);
+        if(current === target) return true;
+    } while(current !== special)
+    return false;
 }
 
 function aStar(start, goal, h = heuristic){
@@ -863,12 +906,20 @@ function aStar(start, goal, h = heuristic){
     var cameFrom = new Map();
     var gScore = new Map([[start, 0]]); //pointToInt(p) -> cost of path from start to p
     var fScore = new Map([[start, h(start, goal)]]); //pointToInt(p) -> heuristic from p to goal
-    var hLess = (a, b) => h(a, goal) < h(b, goal);
-    var current;
-    while(openSet.length > 0){
+    var fLess = (a, b) => fScore.get(a) < fScore.get(b);
+    var current = start
+    var endSet = [goal];
+    var goesTo = new Map();
+    var endGScore = new Map([[goal, 0]]);
+    var endFScore = new Map([[goal, h(goal, start)]]);
+    var endfLess = (a, b) => endFScore.get(a) < endFScore.get(b);
+    var endCurrent = goal;
+    var loopCount = 0;
+    var loopMax = 1000;
+    while(openSet.length > 0 && endSet.length > 0){
         current = openSet[0];
-        if(current === goal) return reconstructPath(cameFrom, current);
-        MinHeap.remove(openSet, hLess);
+        if(cameFrom.has(endCurrent)) return reconstructPath(cameFrom, endCurrent, goesTo);
+        MinHeap.remove(openSet, fLess);
         for(var n of neighbors(current)){
             var tentativeGScore = gScore.get(current) + cost(current, n);
             if(!gScore.has(n) || tentativeGScore < gScore.get(n)){
@@ -876,9 +927,25 @@ function aStar(start, goal, h = heuristic){
                 cameFrom.set(n, current);
                 gScore.set(n, tentativeGScore);
                 fScore.set(n, tentativeGScore + h(n, goal));
-                if(!(openSet.includes(n))) MinHeap.insert(openSet, n, hLess);
+                if(!(openSet.includes(n))) MinHeap.insert(openSet, n, fLess);
             }
         }
+        loopCount++;
+        if(loopCount >= loopMax) throw new Error("oof");
+        if(debugOpts.oneDirectionAStar) continue;
+        endCurrent = endSet[0];
+        if(goesTo.has(current)) return reconstructPath(cameFrom, current, goesTo);
+        MinHeap.remove(endSet, endfLess);
+        for(var n of neighbors(endCurrent)) {
+            var tentativeGScore = endGScore.get(endCurrent) + cost(endCurrent, n);
+            if(!endGScore.has(n) || tentativeGScore < gScore.get(n)){
+                goesTo.set(n, endCurrent);
+                endGScore.set(n, tentativeGScore);
+                endFScore.set(n, tentativeGScore + h(n, start));
+                if(!(endSet.includes(n))) MinHeap.insert(endSet, n, endfLess);
+            }
+        }
+        //console.log(intToPoint(current), intToPoint(endCurrent));
     }
     throw new Error("Failed!");
 }
@@ -914,8 +981,8 @@ function costOfTile(t){
     const tp = tMap1[t[0]][t[1]];
     switch(tp.t){
         case 1: return 2
-        case 2: return 10
-        case 3: return 100
+        case 2: return 100
+        case 3: return 10
         case 6: return 99999
         default: return 1
     }
@@ -939,16 +1006,45 @@ function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES)
     nLeft = x > 0;
     nRight = x < width - 1;
     if(nBot)            neigh.push(pointToInt([y + 1, x    ]));
-    //if(nBot && nRight)  neigh.push(pointToInt([y + 1, x + 1]));
+    if(nBot && nRight)  neigh.push(pointToInt([y + 1, x + 1]));
     if(nRight)          neigh.push(pointToInt([y    , x + 1]));
-    //if(nRight && nTop)  neigh.push(pointToInt([y - 1, x + 1]));
+    if(nRight && nTop)  neigh.push(pointToInt([y - 1, x + 1]));
     if(nTop)            neigh.push(pointToInt([y - 1, x    ]));
-    //if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
+    if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
     if(nLeft)           neigh.push(pointToInt([y    , x - 1]));
     const T = tMap1[y][x];
-    //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
+    if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
     if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]));
     return neigh;
+}
+
+function pointsToInt(p){
+    if(typeof p === "number") return p;
+    return pointToInt(p[0]) * TOTAL_TILES + pointToInt(p[1]);
+}
+
+function intToInts(p){
+    var p0, p1;
+    if(typeof p === "number") {
+        p1 = p % TOTAL_TILES;
+        p0 = (p - p1) / TOTAL_TILES;
+    } else {
+        p0 = pointToInt(p[0]);
+        p1 = pointToInt(p[1]);
+    }
+    return [p0, p1];
+}
+
+function intToPoints(p){
+    var p0, p1;
+    if(typeof p === "number") {
+        p1 = p % TOTAL_TILES;
+        p0 = (p - p1) / TOTAL_TILES;
+    } else {
+        p0 = p[0];
+        p1 = p[1];
+    }
+    return [intToPoint(p0), intToPoint(p1)];
 }
 
 class MinHeap {
@@ -1010,7 +1106,7 @@ function swap(arr, i1, i2){
 
 class Player extends Robbit {
     constructor(){
-        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 15, 40);
+        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 30, 40);
         this.robbitType = "Player";
     }
 
