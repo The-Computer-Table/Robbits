@@ -80,11 +80,13 @@ Changelog
     Added game over screen
 5/19/2022 - v0.10 Pre-Alpha Beta
     BETA!!!!!!!!
-
-Pre-Alpha Alpha
-
-5/23/2022 - v0.10.0.1 Pre-Alpha Alpha
-    Pathfinding ai now uses a faster algorithm
+5/24/2022 - v0.10.1 Pre-Alpha Beta
+    Balance changes
+        Buffs:
+        Enemy health 40 -> 100
+        Player damage 10 -> 30
+        Nerfs:
+        Enemy pathfinding no longer optimal
 
 TODO: 
 ==========
@@ -185,7 +187,7 @@ var testMap = [
 //5: teleporter
 //6: wall
 
-var currentMap = 1;
+var currentMap = 0;
 var tMap1 = []; //array to hold Tile objects
 var block = []; //array to hold blocked zones
 
@@ -606,7 +608,7 @@ class Tile extends GameObject{
     constructor(y, x, t = 0){
         switch(t){
             case 4:
-                starts.push(() => {new SimpleEnemy(x * TILE_WIDTH, y * TILE_WIDTH, 1, 20, 40, 200, rob);});
+                starts.push(() => {new SimpleEnemy(x * TILE_WIDTH, y * TILE_WIDTH, 1, 100, 40, 200, rob);});
                 t = 0;
             case 0:
                 super("tile_default");
@@ -1004,14 +1006,14 @@ function neighbors(tileCoords, width = WIDTH_IN_TILES, height = HEIGHT_IN_TILES)
     nLeft = x > 0;
     nRight = x < width - 1;
     if(nBot)            neigh.push(pointToInt([y + 1, x    ]));
-    //if(nBot && nRight)  neigh.push(pointToInt([y + 1, x + 1]));
+    if(nBot && nRight)  neigh.push(pointToInt([y + 1, x + 1]));
     if(nRight)          neigh.push(pointToInt([y    , x + 1]));
-    //if(nRight && nTop)  neigh.push(pointToInt([y - 1, x + 1]));
+    if(nRight && nTop)  neigh.push(pointToInt([y - 1, x + 1]));
     if(nTop)            neigh.push(pointToInt([y - 1, x    ]));
-    //if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
+    if(nTop && nLeft)   neigh.push(pointToInt([y - 1, x - 1]));
     if(nLeft)           neigh.push(pointToInt([y    , x - 1]));
     const T = tMap1[y][x];
-    //if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
+    if(nLeft && nBot)   neigh.push(pointToInt([y + 1, x - 1]));
     if(T.t === 5) neigh.push(pointToInt([(g = tps[!T.tpId + 0]).ty, g.tx]));
     return neigh;
 }
@@ -1104,7 +1106,7 @@ function swap(arr, i1, i2){
 
 class Player extends Robbit {
     constructor(){
-        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 15, 40);
+        super(BOARD_WIDTH / 2, BOARD_HEIGHT - 2 * TILE_WIDTH, "player", 1.5, 100, 100, 30, 40);
         this.robbitType = "Player";
     }
 
