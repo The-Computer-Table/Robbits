@@ -87,8 +87,7 @@ Changelog
         Player damage 10 -> 30
         Nerfs:
         Enemy pathfinding no longer optimal
-
-Pre-Alpha Alpha v0.10.2
+5/25/2022 - v0.10.2 Pre-Alpha Beta
     Balance changes
         Buffs:
         Player damage 30 -> 40
