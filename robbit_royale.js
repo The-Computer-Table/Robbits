@@ -93,7 +93,8 @@ Changelog
         Player damage 30 -> 40
         Nerfs:
         Enemy bullets no longer go through each other
-
+1/24/2023 - v0.10.3 Pre-Alpha Beta
+    New feature: Press P to pause/unpause the game
 
 TODO: 
 ==========
@@ -141,7 +142,7 @@ Version History:
 
 //maps
 
-var version = "v0.10.2 Pre-Alpha Alpha";
+var version = "0.10.3 Pre-Alpha Beta";
 
 var map1 = [ //array with the type of each tile
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -227,11 +228,12 @@ keyBinds.up = 87;
 keyBinds.left = 65;
 keyBinds.down = 83;
 keyBinds.right = 68;
+keyBinds.pause = 80;
 var keys = {
     up: false,
     down: false,
     left: false,
-    right: false
+    right: false,
 };
 
 var rob;
@@ -521,6 +523,9 @@ function startGame(){
             case keyBinds.right:
                 keys.right = true;
                 break;
+            case keyBinds.pause:
+                pause();
+                break;
             default:
                 break;
         }
@@ -546,6 +551,7 @@ function startGame(){
     });
 
     b.addEventListener("click", (event) => {
+        if(paused) return;
         //console.log(event);
         if(event.button == 0 && rob.wait >= rob.reload) {
             rob.shoot(event.clientX, event.clientY);
@@ -562,6 +568,18 @@ function startGame(){
     app.ticker.remove(doState);
 
     window.setTimeout(() => app.ticker.add(doState), 500);
+}
+
+var pauseState = () => {};
+var paused = false;
+
+function pause(){
+    if(paused) state = pauseState;
+    else{
+        pauseState = state;
+        state = () => {};
+    }
+    paused = !paused;
 }
 
 /**
@@ -677,6 +695,7 @@ class GameObject extends Sprite{
         this.dead = false;
         this.scale.x = SCALE;
         this.scale.y = SCALE;
+        this.boxWidth = 0;
     }
 
     //draw(ctx){
@@ -1223,7 +1242,8 @@ class Player extends Robbit {
             x: ` + this.x + `<br>
             y: ` + this.y + `<br>
             speed: ` + this.speed + `<br>
-            dmg: ` + this.dmg + `
+            dmg: ` + this.dmg + `<br>
+            Robbit Royale version ` + version + `
         `;
     }
 
